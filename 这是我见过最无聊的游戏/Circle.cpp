@@ -4,27 +4,37 @@
 Circle::Circle(RECT rect, RECT oldrect, COLORREF color, int f, BOOL o, double len) :m_location(rect), m_old_location(oldrect), m_Color(color), flag(f), ok(o){
 	//每次缩小1%;
 	m_len = len*0.01;
+
+	int length = (this->m_location.right - this->m_location.left) / 2;
+	origin.x = this->m_location.left + length;
+	length = (this->m_location.bottom - this->m_location.top) / 2;
+	origin.y = this->m_location.top + length;
+
+	this->radius = length;
 }
 
 BOOL Circle::InCircle(POINT point){
 	if (!(this->ok)){
 		return FALSE;
 	}
-	int value = this->m_location.right - this->m_location.left;
-	if (value <= 8){
+	
+	if (this->radius <= 4){
 		//圆太小了
 		return FALSE;
 	}
-	BOOL ret;
-	HRGN hrgn;
-	hrgn = CreateEllipticRgn(this->m_location.left,this->m_location.top,this->m_location.right,this->m_location.bottom);
 
-	if(PtInRegion(hrgn, point.x,point.y))
-		ret = TRUE;
-	else
-		ret = FALSE;
-	DeleteObject(hrgn);
-	return ret;
+	// 勾股定理
+	int a = abs (point.x - this->origin.x);
+	int b = abs (point.y - this->origin.y);
+	int c = pow (a, 2) + pow(b, 2);
+	c = sqrt (c);
+
+	if (c > this->radius)
+	{
+		return FALSE;
+	}
+	
+	return TRUE;
 }
 
 BOOL Circle::IsOk(){

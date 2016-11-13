@@ -4,6 +4,10 @@ class Circle{
 public:
 	//圆的真实大小
 	RECT m_location;
+	//原点坐标
+	POINT origin;
+	//半径
+	int radius;
 	//正在缩小的圆的大小
 	RECT m_old_location;
 	//圆的颜色

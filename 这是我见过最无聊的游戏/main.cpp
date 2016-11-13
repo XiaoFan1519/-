@@ -1,5 +1,6 @@
 #include <windows.h>
 #include <list>
+#include<vector>
 #include "Circle.h"
 
 
@@ -8,7 +9,11 @@ using namespace std;
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 void DrawCircle(HWND);
 
+// 保存圆的集合
 list<Circle*> circles;
+// 保存被删除的圆，但没有被delete的内存
+list<Circle*> memory;
+// vector<Circle*> circles;
 RECT rect;
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	PSTR szCmdLine, int iCmdShow)
@@ -58,8 +63,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
-		else
-			DrawCircle(hwnd);
+		
+		DrawCircle(hwnd);
 	
 	}while (msg.message != WM_QUIT);
 
@@ -70,6 +75,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		*i = NULL;
 	}
 	circles.clear();
+
+	for (auto i = memory.begin (); i != memory.end (); i++)
+	{
+		delete *i;
+		*i = NULL;
+	}
+	memory.clear ();
+
 	return msg.wParam;
 }
 
@@ -132,6 +145,9 @@ void AddCircle( Circle* c){
 
 void DrawCircle(HWND hWnd)
 {
+	DWORD start_time = GetTickCount ();
+	DWORD end_time;
+
 	HDC hdc;
 	HDC hmdc;
 	HBITMAP hBit;
@@ -162,8 +178,13 @@ void DrawCircle(HWND hWnd)
 		i++;
 	}
 
-	Sleep(10);
 	BitBlt(hdc, 0, 0, 800, 800, hmdc, 0, 0, SRCCOPY);
+	end_time = GetTickCount ();
+	DWORD cost = end_time - start_time;
+	if (cost < 16)
+	{
+		Sleep (16 - cost);
+	}
 
 	//注意释放顺序
 	SelectObject(hmdc, oldBit);
@@ -174,4 +195,6 @@ void DrawCircle(HWND hWnd)
 
 	DeleteDC(hmdc);
 	ReleaseDC(hWnd, hdc);
+
+
 }
