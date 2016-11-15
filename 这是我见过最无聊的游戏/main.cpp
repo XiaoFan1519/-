@@ -17,9 +17,6 @@ list<Circle*> memory;
 // vector<Circle*> circles;
 RECT rect;
 
-// 资源
-HPEN hPen;
-
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	PSTR szCmdLine, int iCmdShow)
 {
@@ -27,8 +24,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	circles.reserve (8000);
 
 	// 初始化资源
-	// 透明画笔
-	hPen = CreatePen (PS_NULL, 0, 0);
+	
 
 	//初始化个圆
 	RECT rect;
@@ -99,8 +95,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	}
 	memory.clear();
 
-	// 释放资源
-	DeleteObject(hPen);
 	return msg.wParam;
 }
 
@@ -169,11 +163,13 @@ void DrawCircle(HWND hWnd)
 	HDC hdc;
 	HDC hmdc;
 	HBITMAP hBit;
+	HPEN hPen;
 
 	hdc = GetDC(hWnd);
 	hmdc = CreateCompatibleDC(hdc);
 	hBit = CreateCompatibleBitmap (hdc, 800, 800);
-
+	// 透明画笔
+	hPen = CreatePen (PS_NULL, 0, 0);
 	auto oldPen = SelectObject(hmdc, hPen);
 	auto oldBit = SelectObject(hmdc, hBit);
 
@@ -209,8 +205,9 @@ void DrawCircle(HWND hWnd)
 	SelectObject(hmdc, oldBit);
 	SelectObject(hmdc, oldPen);
 
+	// 释放资源
 	DeleteObject(hBit);
-
+	DeleteObject (hPen);
 	DeleteDC(hmdc);
 	ReleaseDC(hWnd, hdc);
 
