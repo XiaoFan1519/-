@@ -17,7 +17,7 @@ queue<int> indexs;
 
 // 60 FPS 
 // 每次 ≈ 17 ms
-ULONGLONG FPS_60 = 17;
+const ULONGLONG FPS_60 = 17;
 
 // 保存鼠标坐标
 POINT cursorPos;

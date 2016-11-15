@@ -37,9 +37,17 @@ BOOL Circle::InCircle (POINT point) {
 	long a = abs (point.x - this->origin.x);
 	long b = abs (point.y - this->origin.y);
 	long c = a * a + b * b;
+
+	// Òç³öÅÐ¶Ï
+	if (c <= 0)
+	{
+		return FALSE;
+	}
+
 	c = InvSqrt (c);
 
-	if (c < 0)
+	// Òç³öÅÐ¶Ï
+	if (c <= 0)
 	{
 		return FALSE;
 	}
