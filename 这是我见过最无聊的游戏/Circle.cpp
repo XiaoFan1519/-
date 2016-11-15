@@ -46,6 +46,11 @@ BOOL Circle::InCircle (POINT point) {
 	long c = a * a + b * b;
 	c = SqrtByCarmack (c);
 
+	if (c < 0)
+	{
+		return FALSE;
+	}
+
 	if (c > this->radius)
 	{
 		return FALSE;
