@@ -1,6 +1,6 @@
 #include <windows.h>
-#include <list>
-#include<vector>
+#include <vector>
+#include <queue>
 #include "Circle.h"
 
 
@@ -10,11 +10,11 @@ LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 void DrawCircle(HWND);
 
 // 保存圆的集合
-// list<Circle*> circles;
-list<Circle*> circles;
-// 保存被删除的圆，但没有被delete的内存
-list<Circle*> memory;
-// vector<Circle*> circles;
+vector<Circle*> circles;
+
+// 保存被删除的圆的索引
+queue<int> indexs;
+
 RECT rect;
 
 // 保存鼠标坐标
@@ -24,6 +24,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	PSTR szCmdLine, int iCmdShow)
 {
 	// 初始化容器
+	circles.reserve (10000);
 
 	// 初始化资源
 	
@@ -90,13 +91,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	}
 	circles.clear();
 
-	for (auto i = memory.begin (); i != memory.end (); ++i)
-	{
-		delete *i;
-		*i = NULL;
-	}
-	memory.clear();
-
 	return msg.wParam;
 }
 
@@ -115,7 +109,22 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	return DefWindowProc(hwnd, iMsg, wParam, lParam);
 }
 
-void AddCircle( Circle* c){
+// 增加圆到容器中
+void AddCircles (Circle* c)
+{
+	if (indexs.empty ())
+	{
+		circles.push_back (c);
+		return;
+	}
+
+	int index = indexs.front ();
+	indexs.pop ();
+	circles[index] = c;
+}
+
+// 增加四个圆
+void AddCircle(Circle* c){
 	RECT rTmp;
 	Circle *cTmp;
 	int len;
@@ -128,28 +137,28 @@ void AddCircle( Circle* c){
 	rTmp.right = c->m_location.right - len;
 	rTmp.bottom = c->m_location.bottom - len;
 	cTmp = new Circle(rTmp, c->m_location, c->m_Color, 0,FALSE,len);
-	circles.push_back(cTmp);
+	AddCircles (cTmp);
 
 	rTmp.left = c->m_location.left + len;
 	rTmp.top = c->m_location.top;
 	rTmp.right = c->m_location.right;
 	rTmp.bottom = c->m_location.bottom - len;
 	cTmp = new Circle(rTmp, c->m_location, c->m_Color, 1, FALSE, len);
-	circles.push_back(cTmp);
+	AddCircles (cTmp);
 
 	rTmp.left = c->m_location.left;
 	rTmp.top = c->m_location.top + len;
 	rTmp.right = c->m_location.right - len;
 	rTmp.bottom = c->m_location.bottom;
 	cTmp = new Circle(rTmp, c->m_location, c->m_Color, 2, FALSE, len);
-	circles.push_back(cTmp);
+	AddCircles (cTmp);
 
 	rTmp.left = c->m_location.left + len;
 	rTmp.top = c->m_location.top + len;
 	rTmp.right = c->m_location.right;
 	rTmp.bottom = c->m_location.bottom;
 	cTmp = new Circle(rTmp, c->m_location, c->m_Color, 3, FALSE, len);
-	circles.push_back(cTmp);
+	AddCircles (cTmp);
 }
 
 void DrawCircle(HWND hWnd)
@@ -170,26 +179,30 @@ void DrawCircle(HWND hWnd)
 	auto oldPen = SelectObject(hmdc, hPen);
 	auto oldBit = SelectObject(hmdc, hBit);
 
-	for (auto i = circles.begin(); i != circles.end();)
+	int count = circles.size ();
+	for (int index = 0; index < count; ++index)
 	{
-		if ((*i)->InCircle(cursorPos))
+		Circle* c = circles[index];
+		if (nullptr == c)
 		{
-			AddCircle((*i));
-			//别忘了删!!!
-			delete (*i);
-			circles.erase(i++);
 			continue;
 		}
 
-		(*i)->IsOk();
+		if (c->InCircle(cursorPos))
+		{
+			AddCircle(c);
+			//别忘了删!!!
+			delete c;
+			circles[index] = nullptr;
+			indexs.push (index);
+			continue;
+		}
 
-		(*i)->Paint(hmdc);
-
-		++i;
+		c->IsOk();
+		c->Paint(hmdc);
 	}
 
 	BitBlt(hdc, 0, 0, 800, 800, hmdc, 0, 0, SRCCOPY);
-	
 
 	//注意释放顺序
 	SelectObject(hmdc, oldBit);

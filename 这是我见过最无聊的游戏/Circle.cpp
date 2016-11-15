@@ -57,10 +57,8 @@ BOOL Circle::IsOk () {
 	{
 		return TRUE;
 	}
-	else
-	{
-		this->SetSize ();
-	}
+	
+	this->SetSize ();
 	return FALSE;
 }
 
