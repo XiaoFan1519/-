@@ -13,21 +13,14 @@ Circle::Circle (RECT rect, RECT oldrect, COLORREF color, int f, BOOL o, double l
 	this->radius = length;
 }
 
-float SqrtByCarmack (float number)
+float InvSqrt (float x)
 {
-	int i;
-	float x2, y;
-	const float threehalfs = 1.5F;
-
-	x2 = number * 0.5F;
-	y = number;
-	i = *(int *)&y;
-	i = 0x5f375a86 - (i >> 1);
-	y = *(float *)&i;
-	y = y * (threehalfs - (x2 * y * y));
-	y = y * (threehalfs - (x2 * y * y));
-	y = y * (threehalfs - (x2 * y * y));
-	return number*y;
+	float xhalf = 0.5f * x;
+	int i = *(int*) &x;
+	i = 0x5f3759df - (i >> 1);
+	x = *(float*) &i;
+	x = x * (1.5f - xhalf * x * x);
+	return 1 / x;
 }
 
 BOOL Circle::InCircle (POINT point) {
@@ -44,7 +37,7 @@ BOOL Circle::InCircle (POINT point) {
 	long a = abs (point.x - this->origin.x);
 	long b = abs (point.y - this->origin.y);
 	long c = a * a + b * b;
-	c = SqrtByCarmack (c);
+	c = InvSqrt (c);
 
 	if (c < 0)
 	{
