@@ -11,7 +11,7 @@ void DrawCircle(HWND);
 
 // 保存圆的集合
 // list<Circle*> circles;
-vector<Circle*> circles;
+list<Circle*> circles;
 // 保存被删除的圆，但没有被delete的内存
 list<Circle*> memory;
 // vector<Circle*> circles;
@@ -24,7 +24,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	PSTR szCmdLine, int iCmdShow)
 {
 	// 初始化容器
-	circles.reserve (8000);
 
 	// 初始化资源
 	
@@ -173,19 +172,12 @@ void DrawCircle(HWND hWnd)
 
 	for (auto i = circles.begin(); i != circles.end();)
 	{
-		if (nullptr == *i)
-		{
-			++i;
-			continue;
-		}
-
 		if ((*i)->InCircle(cursorPos))
 		{
 			AddCircle((*i));
 			//别忘了删!!!
 			delete (*i);
-			// circles.erase(i++);
-			*i = nullptr;
+			circles.erase(i++);
 			continue;
 		}
 
