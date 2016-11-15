@@ -15,7 +15,9 @@ vector<Circle*> circles;
 // 保存被删除的圆的索引
 queue<int> indexs;
 
-RECT rect;
+// 60 FPS 
+// 每次 ≈ 17 ms
+ULONGLONG FPS_60 = 17;
 
 // 保存鼠标坐标
 POINT cursorPos;
@@ -216,8 +218,8 @@ void DrawCircle(HWND hWnd)
 
 	end_time = GetTickCount64 ();
 	ULONGLONG cost = end_time - start_time;
-	if (cost < 16)
+	if (cost < FPS_60)
 	{
-		Sleep (16 - cost);
+		Sleep (FPS_60 - cost);
 	}
 }
