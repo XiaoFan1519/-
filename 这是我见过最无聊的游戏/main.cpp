@@ -10,14 +10,26 @@ LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 void DrawCircle(HWND);
 
 // 保存圆的集合
-list<Circle*> circles;
+// list<Circle*> circles;
+vector<Circle*> circles;
 // 保存被删除的圆，但没有被delete的内存
 list<Circle*> memory;
 // vector<Circle*> circles;
 RECT rect;
+
+// 资源
+HPEN hPen;
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	PSTR szCmdLine, int iCmdShow)
 {
+	// 初始化容器
+	circles.reserve (8000);
+
+	// 初始化资源
+	// 透明画笔
+	hPen = CreatePen (PS_NULL, 0, 0);
+
 	//初始化个圆
 	RECT rect;
 	rect.left = 0;
@@ -69,20 +81,26 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	}while (msg.message != WM_QUIT);
 
 	//删除所有的圆的指针
-	for (auto i = circles.begin(); i != circles.end(); i++)
+	for (auto i = circles.begin(); i != circles.end(); ++i)
 	{
+		if (nullptr == *i)
+		{
+			continue;
+		}
 		delete *i;
 		*i = NULL;
 	}
 	circles.clear();
 
-	for (auto i = memory.begin (); i != memory.end (); i++)
+	for (auto i = memory.begin (); i != memory.end (); ++i)
 	{
 		delete *i;
 		*i = NULL;
 	}
-	memory.clear ();
+	memory.clear();
 
+	// 释放资源
+	DeleteObject(hPen);
 	return msg.wParam;
 }
 
@@ -145,29 +163,35 @@ void AddCircle( Circle* c){
 
 void DrawCircle(HWND hWnd)
 {
-	DWORD start_time = GetTickCount ();
-	DWORD end_time;
+	ULONGLONG start_time = GetTickCount64 ();
+	ULONGLONG end_time;
 
 	HDC hdc;
 	HDC hmdc;
 	HBITMAP hBit;
-	hdc = GetDC(hWnd);
-	HPEN hPen;
-	hmdc = CreateCompatibleDC(hdc);
-	hBit = CreateCompatibleBitmap(hdc, 800, 800);
 
-	hPen = CreatePen(PS_NULL, 0, 0);
+	hdc = GetDC(hWnd);
+	hmdc = CreateCompatibleDC(hdc);
+	hBit = CreateCompatibleBitmap (hdc, 800, 800);
+
 	auto oldPen = SelectObject(hmdc, hPen);
 	auto oldBit = SelectObject(hmdc, hBit);
 
 	for (auto i = circles.begin(); i != circles.end();)
 	{
+		if (nullptr == *i)
+		{
+			++i;
+			continue;
+		}
+
 		if ((*i)->InCircle(m_GetCursorPos(hWnd)))
 		{
 			AddCircle((*i));
 			//别忘了删!!!
 			delete (*i);
-			circles.erase(i++);
+			// circles.erase(i++);
+			*i = nullptr;
 			continue;
 		}
 
@@ -175,26 +199,25 @@ void DrawCircle(HWND hWnd)
 
 		(*i)->Paint(hmdc);
 
-		i++;
+		++i;
 	}
 
 	BitBlt(hdc, 0, 0, 800, 800, hmdc, 0, 0, SRCCOPY);
-	end_time = GetTickCount ();
-	DWORD cost = end_time - start_time;
-	if (cost < 16)
-	{
-		Sleep (16 - cost);
-	}
+	
 
 	//注意释放顺序
 	SelectObject(hmdc, oldBit);
 	SelectObject(hmdc, oldPen);
 
 	DeleteObject(hBit);
-	DeleteObject(hPen);
 
 	DeleteDC(hmdc);
 	ReleaseDC(hWnd, hdc);
 
-
+	end_time = GetTickCount64 ();
+	ULONGLONG cost = end_time - start_time;
+	if (cost < 16)
+	{
+		Sleep (16 - cost);
+	}
 }
