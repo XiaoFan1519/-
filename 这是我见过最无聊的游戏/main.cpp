@@ -17,6 +17,9 @@ list<Circle*> memory;
 // vector<Circle*> circles;
 RECT rect;
 
+// 保存鼠标坐标
+POINT cursorPos;
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	PSTR szCmdLine, int iCmdShow)
 {
@@ -105,17 +108,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		return 0;
+	case WM_MOUSEMOVE:
+		cursorPos.x = LOWORD (lParam);
+		cursorPos.y = HIWORD (lParam);
+		return 0;
 	}
 	return DefWindowProc(hwnd, iMsg, wParam, lParam);
-}
-
-
-
-POINT m_GetCursorPos(HWND hWnd){
-	POINT point;
-	GetCursorPos(&point);
-	ScreenToClient(hWnd, &point);
-	return point;
 }
 
 void AddCircle( Circle* c){
@@ -181,7 +179,7 @@ void DrawCircle(HWND hWnd)
 			continue;
 		}
 
-		if ((*i)->InCircle(m_GetCursorPos(hWnd)))
+		if ((*i)->InCircle(cursorPos))
 		{
 			AddCircle((*i));
 			//别忘了删!!!
