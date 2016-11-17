@@ -23,6 +23,11 @@ float InvSqrt (float x)
 	return 1 / x;
 }
 
+long myabs (long num)
+{
+	return num > 0 ? num : -num;
+}
+
 BOOL Circle::InCircle (POINT point) {
 	if (!(this->ok)) {
 		return FALSE;
@@ -34,8 +39,8 @@ BOOL Circle::InCircle (POINT point) {
 	}
 
 	// 勾股定理
-	long a = abs (point.x - this->origin.x);
-	long b = abs (point.y - this->origin.y);
+	long a = myabs (point.x - this->origin.x);
+	long b = myabs (point.y - this->origin.y);
 	long c = a * a + b * b;
 
 	// 溢出判断
