@@ -29,7 +29,6 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
 {
 	// 系统初始化
 	HRESULT hr = CoInitialize (NULL);
-	assert (hr);
 
 	// 创建d2d资源
 	hr = S_OK;
