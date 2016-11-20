@@ -120,10 +120,10 @@ void Circle::Paint (ID2D1HwndRenderTarget* m_pRenderTarget) {
 	HBRUSH hBrush;
 
 	// ID2D1SolidColorBrush** 
-	ID2D1SolidColorBrush** brush = nullptr;
+	ID2D1SolidColorBrush* brush = nullptr;
 	m_pRenderTarget->CreateSolidColorBrush (
 		D2D1::ColorF (this->m_Color),
-		brush);
+		&brush);
 	
 	D2D1_ELLIPSE ellipse = D2D1::Ellipse (
 		D2D1::Point2F(this->m_location.left, this->m_location.top),
@@ -138,7 +138,7 @@ void Circle::Paint (ID2D1HwndRenderTarget* m_pRenderTarget) {
 	}
 
 	m_pRenderTarget->FillEllipse (ellipse,
-		*brush);
+		brush);
 
-	SafeRelease (brush);
+	SafeRelease (&brush);
 }
