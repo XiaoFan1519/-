@@ -34,7 +34,6 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	hr = S_OK;
 	// Create a Direct2D factory.
 	hr = D2D1CreateFactory (D2D1_FACTORY_TYPE_SINGLE_THREADED, &m_pDirect2dFactory);
-	assert (hr);
 
 	// 初始化容器
 	circles.reserve (10000);
@@ -199,6 +198,11 @@ void DrawCircle (HWND hWnd)
 	ULONGLONG end_time;
 
 	CreateDeviceResources (hWnd);
+
+	if (nullptr == m_pRenderTarget)
+	{
+		return;
+	}
 
 	// 开始画画
 	m_pRenderTarget->BeginDraw ();
