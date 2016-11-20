@@ -85,6 +85,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Circle.h" />
+    <ClInclude Include="init.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
