@@ -31,11 +31,14 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	HRESULT hr = CoInitialize (NULL);
 	assert (hr);
 
+	// 创建d2d资源
+	hr = S_OK;
+	// Create a Direct2D factory.
+	hr = D2D1CreateFactory (D2D1_FACTORY_TYPE_SINGLE_THREADED, &m_pDirect2dFactory);
+	assert (hr);
+
 	// 初始化容器
 	circles.reserve (10000);
-
-	// 初始化资源
-
 
 	//初始化个圆
 	RECT rect;
@@ -68,23 +71,9 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		return 0;
 	}
 	hwnd = CreateWindow (szAppName, TEXT ("这是我见过的最无聊的游戏"), WS_OVERLAPPEDWINDOW & ~WS_MAXIMIZEBOX & ~WS_THICKFRAME, 0, 0, 800 + 16, 800 + 38, NULL, NULL, hInstance, NULL);
+
 	ShowWindow (hwnd, iCmdShow);
 	UpdateWindow (hwnd);
-
-	// 创建d2d资源
-	hr = S_OK;
-	// Create a Direct2D factory.
-	hr = D2D1CreateFactory (D2D1_FACTORY_TYPE_SINGLE_THREADED, &m_pDirect2dFactory);
-	assert (hr);
-
-	D2D1_SIZE_U size = D2D1::SizeU (816, 838);
-
-	// Create a Direct2D render target.
-	hr = m_pDirect2dFactory->CreateHwndRenderTarget (
-		D2D1::RenderTargetProperties (),
-		D2D1::HwndRenderTargetProperties (hwnd, size),
-		&m_pRenderTarget
-	);
 
 	do {
 		//利用空闲时间来画画
@@ -113,8 +102,7 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	// 释放 COM
 	SafeRelease (&m_pDirect2dFactory);
-	SafeRelease (&m_pRenderTarget);
-	
+
 	CoUninitialize ();
 
 	return msg.wParam;
@@ -187,23 +175,36 @@ void AddCircle (Circle* c) {
 	AddCircles (cTmp);
 }
 
+// 创建 RenderTarget 资源
+void CreateDeviceResources (HWND hWnd)
+{
+	RECT rc;
+	GetClientRect (hWnd, &rc);
+
+	D2D1_SIZE_U size = D2D1::SizeU (
+		rc.right - rc.left,
+		rc.bottom - rc.top
+	);
+
+	// Create a Direct2D render target.
+	m_pDirect2dFactory->CreateHwndRenderTarget (
+		D2D1::RenderTargetProperties (),
+		D2D1::HwndRenderTargetProperties (hWnd, size),
+		&m_pRenderTarget
+	);
+}
+
 void DrawCircle (HWND hWnd)
 {
 	ULONGLONG start_time = GetTickCount64 ();
 	ULONGLONG end_time;
 
-	HDC hdc;
-	HDC hmdc;
-	HBITMAP hBit;
-	HPEN hPen;
+	CreateDeviceResources (hWnd);
 
-	hdc = GetDC (hWnd);
-	hmdc = CreateCompatibleDC (hdc);
-	hBit = CreateCompatibleBitmap (hdc, 800, 800);
-	// 透明画笔
-	hPen = CreatePen (PS_NULL, 0, 0);
-	auto oldPen = SelectObject (hmdc, hPen);
-	auto oldBit = SelectObject (hmdc, hBit);
+	// 开始画画
+	m_pRenderTarget->BeginDraw ();
+	m_pRenderTarget->SetTransform (D2D1::Matrix3x2F::Identity ());
+	m_pRenderTarget->Clear (D2D1::ColorF (D2D1::ColorF::Black));
 
 	int count = circles.size ();
 	for (int index = 0; index < count; ++index)
@@ -225,20 +226,14 @@ void DrawCircle (HWND hWnd)
 		}
 
 		c->IsOk ();
-		c->Paint (hmdc);
+		c->Paint (m_pRenderTarget);
 	}
 
-	BitBlt (hdc, 0, 0, 800, 800, hmdc, 0, 0, SRCCOPY);
-
-	//注意释放顺序
-	SelectObject (hmdc, oldBit);
-	SelectObject (hmdc, oldPen);
+	// 结束画画
+	m_pRenderTarget->EndDraw ();
 
 	// 释放资源
-	DeleteObject (hBit);
-	DeleteObject (hPen);
-	DeleteDC (hmdc);
-	ReleaseDC (hWnd, hdc);
+	SafeRelease (&m_pRenderTarget);
 
 	end_time = GetTickCount64 ();
 	ULONGLONG cost = end_time - start_time;

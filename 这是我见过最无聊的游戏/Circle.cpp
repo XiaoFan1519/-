@@ -1,5 +1,5 @@
+#include "init.h"
 #include "Circle.h"
-#include <cmath>
 
 Circle::Circle (RECT rect, RECT oldrect, COLORREF color, int f, BOOL o, double len) :m_location (rect), m_old_location (oldrect), m_Color (color), flag (f), ok (o) {
 	//每次缩小1%;
@@ -116,23 +116,29 @@ BOOL Circle::CompareRect (RECT r1, RECT r2) {
 	return TRUE;
 }
 
-void Circle::Paint (HDC hdc) {
+void Circle::Paint (ID2D1HwndRenderTarget* m_pRenderTarget) {
 	HBRUSH hBrush;
 
-	hBrush = CreateSolidBrush (this->m_Color);
-	auto oldBrush = SelectObject (hdc, hBrush);
+	// ID2D1SolidColorBrush** 
+	ID2D1SolidColorBrush** brush = nullptr;
+	m_pRenderTarget->CreateSolidColorBrush (
+		D2D1::ColorF (this->m_Color),
+		brush);
+	
+	D2D1_ELLIPSE ellipse = D2D1::Ellipse (
+		D2D1::Point2F(this->m_location.left, this->m_location.top),
+		this->m_location.right, this->m_location.bottom);
 
-	//如果缩小完成了,就画缩小好的圆
-	if (this->ok)
+	// 如果没画完，就画正在缩小的圆
+	if (!this->ok)
 	{
-		Ellipse (hdc, this->m_location.left, this->m_location.top, this->m_location.right, this->m_location.bottom);
-	}
-	else
-	{
-		Ellipse (hdc, this->m_old_location.left, this->m_old_location.top, this->m_old_location.right, this->m_old_location.bottom);
+		ellipse = D2D1::Ellipse (
+			D2D1::Point2F (this->m_old_location.left, this->m_old_location.top),
+			this->m_old_location.right, this->m_old_location.bottom);
 	}
 
-	SelectObject (hdc, oldBrush);
+	m_pRenderTarget->FillEllipse (ellipse,
+		*brush);
 
-	DeleteObject (hBrush);
+	SafeRelease (brush);
 }

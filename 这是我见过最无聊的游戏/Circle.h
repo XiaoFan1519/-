@@ -25,6 +25,7 @@ public:
 	
 	//坐标是否在圆内
 	BOOL InCircle(POINT);
+
 	//是否完成缩小了
 	BOOL IsOk();
 	
@@ -33,6 +34,7 @@ public:
 
 	//缩小圆
 	void SetSize();
-	//画园
-	void Paint(HDC);
+
+	//画圆
+	void Paint(ID2D1HwndRenderTarget* m_pRenderTarget);
 };
