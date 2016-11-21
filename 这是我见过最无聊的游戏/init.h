@@ -46,29 +46,3 @@ inline void SafeRelease (
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 #define HINST_THISCOMPONENT ((HINSTANCE)&__ImageBase)
 #endif
-
-// 基础结构体 重载==
-bool operator==(D2D1_ELLIPSE r1, D2D1_ELLIPSE r2)
-{
-	if (r1.radiusX != r2.radiusX)
-	{
-		return false;
-	}
-
-	if (r1.radiusY != r2.radiusY)
-	{
-		return false;
-	}
-
-	if (r1.point.x != r2.point.x)
-	{
-		return false;
-	}
-
-	if (r1.point.y != r2.point.y)
-	{
-		return false;
-	}
-
-	return true;
-}
