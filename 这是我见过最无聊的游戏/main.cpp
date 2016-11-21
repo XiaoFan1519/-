@@ -39,13 +39,14 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	circles.reserve (10000);
 
 	//初始化个圆
-	RECT rect;
-	rect.left = 0;
-	rect.top = 0;
-	rect.right = 800;
-	rect.bottom = 800;
+	D2D1_ELLIPSE ellipse;
+	ellipse.point.x = 
+		ellipse.point.y = 400;
+	ellipse.radiusX =
+		ellipse.radiusY = 400;
+
 	COLORREF color = RGB (rand () % 256, rand () % 256, rand () % 256);
-	Circle* circle = new Circle (rect, RECT (), color, 0, TRUE, 400);
+	Circle* circle = new Circle (ellipse, ellipse, color, 0, TRUE);
 	circles.push_back (circle);
 
 	//下面都是创建窗口的代码
@@ -136,40 +137,44 @@ void AddCircles (Circle* c)
 }
 
 // 增加四个圆
-void AddCircle (Circle* c) {
-	RECT rTmp;
+void AddCircle (Circle* c) 
+{
 	Circle *cTmp;
-	int len;
-	//圆的半径
-	len = (c->m_location.right - c->m_location.left) / 2;
+	
+	// 半径
+	float radius = c->m_ellipse.radiusX / 2;
+	
+	D2D1_ELLIPSE ellipse = c->m_ellipse;
 
-	//下面新建4个新圆
-	rTmp.left = c->m_location.left;
-	rTmp.top = c->m_location.top;
-	rTmp.right = c->m_location.right - len;
-	rTmp.bottom = c->m_location.bottom - len;
-	cTmp = new Circle (rTmp, c->m_location, c->m_Color, 0, FALSE, len);
+	//下面新建4个新圆 flag 0
+	ellipse.point.x -= radius;
+	ellipse.point.y -= radius;
+	ellipse.radiusX = ellipse.radiusY = radius;
+	cTmp = new Circle (ellipse, c->m_ellipse, c->m_Color, 0, FALSE);
 	AddCircles (cTmp);
 
-	rTmp.left = c->m_location.left + len;
-	rTmp.top = c->m_location.top;
-	rTmp.right = c->m_location.right;
-	rTmp.bottom = c->m_location.bottom - len;
-	cTmp = new Circle (rTmp, c->m_location, c->m_Color, 1, FALSE, len);
+	// flag 1
+	ellipse = c->m_ellipse;
+	ellipse.point.x += radius;
+	ellipse.point.y -= radius;
+	ellipse.radiusX = ellipse.radiusY = radius;
+	cTmp = new Circle (ellipse, c->m_ellipse, c->m_Color, 1, FALSE);
 	AddCircles (cTmp);
 
-	rTmp.left = c->m_location.left;
-	rTmp.top = c->m_location.top + len;
-	rTmp.right = c->m_location.right - len;
-	rTmp.bottom = c->m_location.bottom;
-	cTmp = new Circle (rTmp, c->m_location, c->m_Color, 2, FALSE, len);
+	// flag 2
+	ellipse = c->m_ellipse;
+	ellipse.point.x -= radius;
+	ellipse.point.y += radius;
+	ellipse.radiusX = ellipse.radiusY = radius;
+	cTmp = new Circle (ellipse, c->m_ellipse, c->m_Color, 2, FALSE);
 	AddCircles (cTmp);
 
-	rTmp.left = c->m_location.left + len;
-	rTmp.top = c->m_location.top + len;
-	rTmp.right = c->m_location.right;
-	rTmp.bottom = c->m_location.bottom;
-	cTmp = new Circle (rTmp, c->m_location, c->m_Color, 3, FALSE, len);
+	// flag 3
+	ellipse = c->m_ellipse;
+	ellipse.point.x += radius;
+	ellipse.point.y += radius;
+	ellipse.radiusX = ellipse.radiusY = radius;
+	cTmp = new Circle (ellipse, c->m_ellipse, c->m_Color, 3, FALSE);
 	AddCircles (cTmp);
 }
 

@@ -1,16 +1,10 @@
 #include "init.h"
 #include "Circle.h"
 
-Circle::Circle (RECT rect, RECT oldrect, COLORREF color, int f, BOOL o, double len) :m_location (rect), m_old_location (oldrect), m_Color (color), flag (f), ok (o) {
+Circle::Circle (D2D1_ELLIPSE ellipse, D2D1_ELLIPSE oldEllipse, COLORREF color, int f, BOOL ok) : 
+	m_ellipse (ellipse), m_oldEllipse (oldEllipse), m_Color (color), m_flag (f), m_ok (ok) {
 	//每次缩小1%;
-	m_len = len*0.01;
-
-	int length = (this->m_location.right - this->m_location.left) / 2;
-	origin.x = this->m_location.left + length;
-	length = (this->m_location.bottom - this->m_location.top) / 2;
-	origin.y = this->m_location.top + length;
-
-	this->radius = length;
+	m_len = oldEllipse.radiusX * 0.01f;
 }
 
 float InvSqrt (float x)
@@ -29,18 +23,18 @@ long myabs (long num)
 }
 
 BOOL Circle::InCircle (POINT point) {
-	if (!(this->ok)) {
+	if (!(this->m_ok)) {
 		return FALSE;
 	}
 
-	if (this->radius <= 4) {
+	if (this->m_ellipse.radiusX <= 4.0f) {
 		//圆太小了
 		return FALSE;
 	}
 
 	// 勾股定理
-	long a = myabs (point.x - this->origin.x);
-	long b = myabs (point.y - this->origin.y);
+	long a = myabs (point.x - this->m_ellipse.point.x);
+	long b = myabs (point.y - this->m_ellipse.point.y);
 	long c = a * a + b * b;
 
 	// 溢出判断
@@ -57,7 +51,8 @@ BOOL Circle::InCircle (POINT point) {
 		return FALSE;
 	}
 
-	if (c > this->radius)
+	// 判断是否在圆的范围内
+	if (c > this->m_ellipse.radiusX)
 	{
 		return FALSE;
 	}
@@ -66,7 +61,7 @@ BOOL Circle::InCircle (POINT point) {
 }
 
 BOOL Circle::IsOk () {
-	if (this->ok)
+	if (this->m_ok)
 	{
 		return TRUE;
 	}
@@ -75,66 +70,85 @@ BOOL Circle::IsOk () {
 	return FALSE;
 }
 
-void Circle::SetSize () {
-	if (this->CompareRect (this->m_location, this->m_old_location)) {
-		this->ok = TRUE;
+void Circle::SetSize () 
+{
+	if (this->CompareRect (m_ellipse, m_oldEllipse)) 
+	{
+		this->m_ok = TRUE;
 		//完成缩小后,改变颜色
 		this->m_Color = RGB (rand () % 255 + 1, rand () % 255 + 1, rand () % 255 + 1);
+		return;
 	}
-	else
+	
+	// 缩小半径
+	this->m_oldEllipse.radiusX =
+		this->m_oldEllipse.radiusY -= this->m_len;
+
+	D2D1_POINT_2F& point = this->m_oldEllipse.point;
+
+	switch (this->m_flag)
 	{
-		switch (this->flag)
-		{
-		case 0:
-			this->m_old_location.right -= ceil (m_len);
-			this->m_old_location.bottom -= ceil (m_len);
-			break;
-		case 1:
-			this->m_old_location.left += ceil (m_len);
-			this->m_old_location.bottom -= ceil (m_len);
-			break;
-		case 2:
-			this->m_old_location.top += ceil (m_len);
-			this->m_old_location.right -= ceil (m_len);
-			break;
-		case 3:
-			this->m_old_location.left += ceil (m_len);
-			this->m_old_location.top += ceil (m_len);
-			break;
-		default:
-			break;
-		}
+	case 0:
+		point.x -= m_len;
+		point.y -= m_len;
+		break;
+	case 1:
+		point.x += m_len;
+		point.y -= m_len;
+		break;
+	case 2:
+		point.x -= m_len;
+		point.y += m_len;
+		break;
+	case 3:
+		point.x += m_len;
+		point.y += m_len;
+		break;
+	default:
+		break;
 	}
 }
 
 
-BOOL Circle::CompareRect (RECT r1, RECT r2) {
-	if (r1.right - r1.left <= r2.right - r2.left)
+BOOL Circle::CompareRect (const D2D1_ELLIPSE& r1, const D2D1_ELLIPSE& r2) 
+{	
+	if (r1.radiusX != r2.radiusX)
 	{
-		return FALSE;
+		return false;
 	}
-	return TRUE;
+
+	if (r1.radiusY != r2.radiusY)
+	{
+		return false;
+	}
+
+	if (r1.point.x != r2.point.x)
+	{
+		return false;
+	}
+
+	if (r1.point.y != r2.point.y)
+	{
+		return false;
+	}
+
+	return true;
 }
 
-void Circle::Paint (ID2D1HwndRenderTarget* m_pRenderTarget) {
-	HBRUSH hBrush;
-
+void Circle::Paint (ID2D1HwndRenderTarget* m_pRenderTarget) 
+{
 	// ID2D1SolidColorBrush** 
 	ID2D1SolidColorBrush* brush = nullptr;
 	m_pRenderTarget->CreateSolidColorBrush (
 		D2D1::ColorF (this->m_Color),
 		&brush);
 	
-	D2D1_ELLIPSE ellipse = D2D1::Ellipse (
-		D2D1::Point2F(this->m_location.left, this->m_location.top),
-		this->m_location.right, this->m_location.bottom);
+	D2D1_ELLIPSE ellipse = this->m_ellipse;
 
 	// 如果没画完，就画正在缩小的圆
-	if (!this->ok)
+	if (!this->m_ok)
 	{
-		ellipse = D2D1::Ellipse (
-			D2D1::Point2F (this->m_old_location.left, this->m_old_location.top),
-			this->m_old_location.right, this->m_old_location.bottom);
+		ellipse = this->m_oldEllipse;
 	}
 
 	m_pRenderTarget->FillEllipse (ellipse,
