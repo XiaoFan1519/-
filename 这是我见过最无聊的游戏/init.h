@@ -18,7 +18,6 @@
 // std
 #include <vector>
 #include <queue>
-#include <cassert>
 
 // d2d function
 template<class Interface>
