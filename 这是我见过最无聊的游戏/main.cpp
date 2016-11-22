@@ -214,8 +214,8 @@ void DrawCircle (HWND hWnd)
 	m_pRenderTarget->SetTransform (D2D1::Matrix3x2F::Identity ());
 	m_pRenderTarget->Clear (D2D1::ColorF (D2D1::ColorF::Black));
 
-	int count = circles.size ();
-	for (int index = 0; index < count; ++index)
+	// int count = circles.size (); // 之前为了减少每次执行size浪费的时间，所以在循环前先获取大小
+	for (int index = 0; index < circles.size (); ++index)
 	{
 		Circle* c = circles[index];
 		if (nullptr == c)
