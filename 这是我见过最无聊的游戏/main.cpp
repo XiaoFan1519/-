@@ -23,6 +23,8 @@ POINT cursorPos;
 // d2d 需要的变量
 ID2D1Factory* m_pDirect2dFactory;
 ID2D1HwndRenderTarget* m_pRenderTarget;
+IDWriteFactory* m_pDWriteFactory;
+IDWriteTextFormat* m_pTextFormat;
 
 int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	PSTR szCmdLine, int iCmdShow)
@@ -34,6 +36,23 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	hr = S_OK;
 	// Create a Direct2D factory.
 	hr = D2D1CreateFactory (D2D1_FACTORY_TYPE_SINGLE_THREADED, &m_pDirect2dFactory);
+
+	hr = DWriteCreateFactory (
+		DWRITE_FACTORY_TYPE_SHARED,
+		__uuidof(IDWriteFactory),
+		reinterpret_cast<IUnknown**>(&m_pDWriteFactory)
+	);
+
+	hr = m_pDWriteFactory->CreateTextFormat (
+		L"Gabriola",                   // Font family name
+		NULL,                          // Font collection(NULL sets it to the system font collection)
+		DWRITE_FONT_WEIGHT_REGULAR,    // Weight
+		DWRITE_FONT_STYLE_NORMAL,      // Style
+		DWRITE_FONT_STRETCH_NORMAL,    // Stretch
+		16.0f,                         // Size    
+		L"en-us",                      // Local
+		&m_pTextFormat                 // Pointer to recieve the created object
+	);
 
 	// 初始化容器
 	circles.reserve (10000);
@@ -69,7 +88,11 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		MessageBox (NULL, TEXT ("This program requires Windows NT!"), szAppName, MB_ICONERROR);
 		return 0;
 	}
-	hwnd = CreateWindow (szAppName, TEXT ("这是我见过的最无聊的游戏"), WS_OVERLAPPEDWINDOW & ~WS_MAXIMIZEBOX & ~WS_THICKFRAME, 0, 0, 800 + 16, 800 + 38, NULL, NULL, hInstance, NULL);
+	hwnd = CreateWindow (szAppName, TEXT ("这是我见过的最无聊的游戏"), 
+		WS_OVERLAPPEDWINDOW & ~WS_MAXIMIZEBOX & ~WS_THICKFRAME,
+		0, 0, 
+		800 + 16 + 160, 800 + 38,
+		NULL, NULL, hInstance, NULL);
 
 	ShowWindow (hwnd, iCmdShow);
 	UpdateWindow (hwnd);
@@ -101,6 +124,8 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	// 释放 COM
 	SafeRelease (&m_pDirect2dFactory);
+	SafeRelease (&m_pDWriteFactory);
+	SafeRelease (&m_pTextFormat);
 
 	CoUninitialize ();
 
@@ -197,6 +222,51 @@ void CreateDeviceResources (HWND hWnd)
 	);
 }
 
+void fps (float cost)
+{
+	static ULONGLONG start_time = GetTickCount64 ();
+	static float fps = 60;
+
+	ULONGLONG end_time = GetTickCount64 ();
+	if (cost == 0)
+	{
+		fps = 60.f;
+	}
+	else
+	{
+		if ((end_time - start_time) >= 1000)
+		{
+			fps = 1000.f / cost;
+			start_time = GetTickCount64 ();
+		}
+	}
+
+	std::wstringstream ss;
+	ss << "FPS:";
+	ss << fps;
+	std::wstring costStr;
+	ss >> costStr;
+
+	D2D1_RECT_F textLayoutRect = D2D1::RectF (
+		static_cast<FLOAT>(800.f),
+		static_cast<FLOAT>(0.f),
+		static_cast<FLOAT>(960.f),
+		static_cast<FLOAT>(16.f)
+	);
+ 
+	ID2D1SolidColorBrush* brush = nullptr;
+	m_pRenderTarget->CreateSolidColorBrush (
+		D2D1::ColorF (255, 140, 0),
+		&brush);
+
+	m_pRenderTarget->DrawText (costStr.c_str (), costStr.size (), 
+		m_pTextFormat, 
+		&textLayoutRect,
+		brush);
+
+	SafeRelease (&brush);
+ }
+
 void DrawCircle (HWND hWnd)
 {
 	ULONGLONG start_time = GetTickCount64 ();
@@ -237,16 +307,18 @@ void DrawCircle (HWND hWnd)
 		c->Paint (m_pRenderTarget);
 	}
 
-	// 结束画画
-	m_pRenderTarget->EndDraw ();
-
-	// 释放资源
-	SafeRelease (&m_pRenderTarget);
-
 	end_time = GetTickCount64 ();
 	ULONGLONG cost = end_time - start_time;
 	if (cost < FPS_60)
 	{
 		Sleep (FPS_60 - cost);
 	}
+
+	fps (cost);
+
+	// 结束画画
+	m_pRenderTarget->EndDraw ();
+
+	// 释放资源
+	SafeRelease (&m_pRenderTarget);
 }
