@@ -14,7 +14,7 @@
     <ProjectGuid>{A1E26292-DF65-4436-B229-41DCC0BC8D94}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>这是我见过最无聊的游戏</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
