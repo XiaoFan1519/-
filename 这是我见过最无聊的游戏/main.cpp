@@ -104,8 +104,10 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			TranslateMessage (&msg);
 			DispatchMessage (&msg);
 		}
-
-		DrawCircle (hwnd);
+		else
+		{
+			DrawCircle (hwnd);
+		}
 
 	} while (msg.message != WM_QUIT);
 
@@ -117,7 +119,6 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			continue;
 		}
 		delete *i;
-		*i = NULL;
 	}
 	circles.clear ();
 
@@ -284,8 +285,8 @@ void DrawCircle (HWND hWnd)
 	m_pRenderTarget->SetTransform (D2D1::Matrix3x2F::Identity ());
 	m_pRenderTarget->Clear (D2D1::ColorF (D2D1::ColorF::Black));
 
-	// int count = circles.size (); // 之前为了减少每次执行size浪费的时间，所以在循环前先获取大小
-	for (size_t index = 0; index < circles.size (); ++index)
+	size_t count = circles.size (); // 之前为了减少每次执行size浪费的时间，所以在循环前先获取大小
+	for (size_t index = 0; index < count; ++index)
 	{
 		Circle* c = circles[index];
 		if (nullptr == c)
@@ -311,7 +312,7 @@ void DrawCircle (HWND hWnd)
 	ULONGLONG cost = end_time - start_time;
 	if (cost < FPS_60)
 	{
-		Sleep (FPS_60 - cost);
+		// Sleep (FPS_60 - cost);
 	}
 
 	fps (cost);
