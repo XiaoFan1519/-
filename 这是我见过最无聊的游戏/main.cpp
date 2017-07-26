@@ -1,6 +1,6 @@
 #include "init.h"
 #include "Circle.h"
-
+#include "FPSUtil.h"
 
 using namespace std;
 
@@ -223,55 +223,9 @@ void CreateDeviceResources (HWND hWnd)
 	);
 }
 
-void fps (float cost)
-{
-	static ULONGLONG start_time = GetTickCount64 ();
-	static float fps = 60;
-
-	ULONGLONG end_time = GetTickCount64 ();
-	if (cost == 0)
-	{
-		fps = 60.f;
-	}
-	else
-	{
-		if ((end_time - start_time) >= 1000)
-		{
-			fps = 1000.f / cost;
-			start_time = GetTickCount64 ();
-		}
-	}
-
-	std::wstringstream ss;
-	ss << "FPS:";
-	ss << fps;
-	std::wstring costStr;
-	ss >> costStr;
-
-	D2D1_RECT_F textLayoutRect = D2D1::RectF (
-		static_cast<FLOAT>(800.f),
-		static_cast<FLOAT>(0.f),
-		static_cast<FLOAT>(960.f),
-		static_cast<FLOAT>(16.f)
-	);
- 
-	ID2D1SolidColorBrush* brush = nullptr;
-	m_pRenderTarget->CreateSolidColorBrush (
-		D2D1::ColorF (255, 140, 0),
-		&brush);
-
-	m_pRenderTarget->DrawText (costStr.c_str (), costStr.size (), 
-		m_pTextFormat, 
-		&textLayoutRect,
-		brush);
-
-	SafeRelease (&brush);
- }
-
 void DrawCircle (HWND hWnd)
 {
-	ULONGLONG start_time = GetTickCount64 ();
-	ULONGLONG end_time;
+	FPSUtil::setStartTime ();
 
 	CreateDeviceResources (hWnd);
 
@@ -308,14 +262,9 @@ void DrawCircle (HWND hWnd)
 		c->Paint (m_pRenderTarget);
 	}
 
-	end_time = GetTickCount64 ();
-	ULONGLONG cost = end_time - start_time;
-	if (cost < FPS_60)
-	{
-		// Sleep (FPS_60 - cost);
-	}
+	FPSUtil::setEndTime ();
 
-	fps (cost);
+	fps (m_pRenderTarget, m_pTextFormat);
 
 	// ½áÊø»­»­
 	m_pRenderTarget->EndDraw ();

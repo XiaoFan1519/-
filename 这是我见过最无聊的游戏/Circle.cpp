@@ -1,10 +1,11 @@
 #include "init.h"
 #include "Circle.h"
+#include "FPSUtil.h"
 
 Circle::Circle (D2D1_ELLIPSE ellipse, D2D1_ELLIPSE oldEllipse, COLORREF color, int f, BOOL ok) : 
 	m_ellipse (ellipse), m_oldEllipse (oldEllipse), m_Color (color), m_flag (f), m_ok (ok) {
-	//每次缩小1%;
-	m_len = oldEllipse.radiusX * 0.01f;
+	
+	len = oldEllipse.radiusX - ellipse.radiusX;
 }
 
 float InvSqrt (float x)
@@ -72,6 +73,13 @@ BOOL Circle::IsOk () {
 
 void Circle::SetSize () 
 {
+	//每次缩小的值
+	float m_len = 0;
+	// 每3秒需要减去的值
+	float tmp = len / 180;
+	// 计算每帧要减去的值
+	m_len = FPSUtil::getDeltaTime () * tmp;
+
 	if (this->CompareRect (m_ellipse, m_oldEllipse)) 
 	{
 		this->m_ok = TRUE;
@@ -82,7 +90,7 @@ void Circle::SetSize ()
 	
 	// 缩小半径
 	this->m_oldEllipse.radiusX =
-		this->m_oldEllipse.radiusY -= this->m_len;
+		this->m_oldEllipse.radiusY -= m_len;
 
 	D2D1_POINT_2F& point = this->m_oldEllipse.point;
 
@@ -112,17 +120,17 @@ void Circle::SetSize ()
 
 BOOL Circle::CompareRect (const D2D1_ELLIPSE& r1, const D2D1_ELLIPSE& r2) 
 {	
-	if (r1.radiusX != r2.radiusX)
+	if (r1.radiusX < r2.radiusX)
 	{
 		return false;
 	}
 
-	if (r1.radiusY != r2.radiusY)
+	if (r1.radiusY < r2.radiusY)
 	{
 		return false;
 	}
 
-	if (r1.point.x != r2.point.x)
+	/*if (r1.point.x != r2.point.x)
 	{
 		return false;
 	}
@@ -130,7 +138,7 @@ BOOL Circle::CompareRect (const D2D1_ELLIPSE& r1, const D2D1_ELLIPSE& r2)
 	if (r1.point.y != r2.point.y)
 	{
 		return false;
-	}
+	}*/
 
 	return true;
 }

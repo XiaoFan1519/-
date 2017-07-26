@@ -15,8 +15,8 @@ public:
 	int m_flag;
 	//是否接收鼠标消息
 	BOOL m_ok;
-	//每次缩小的值
-	float m_len;
+	// 旧圆和新圆的长度差
+	float len;
 
 	// 构造函数
 	// 最终坐标，当前坐标，颜色值，flag标识，是否接收鼠标消息

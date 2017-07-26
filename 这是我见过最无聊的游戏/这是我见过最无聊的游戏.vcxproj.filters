@@ -21,12 +21,18 @@
     <ClCompile Include="Circle.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="FPSUtil.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Circle.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="init.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="FPSUtil.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
