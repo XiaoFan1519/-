@@ -6,7 +6,7 @@ class FPSUtil
 private:
 	// 当前FPS
 	static float fps;
-	// 每帧消费的毫秒数
+	// 每帧消费的秒数
 	static float deltaTime;
 	static ULONGLONG startTime;
 public:
@@ -22,7 +22,7 @@ public:
 	// 获取当前FPS
 	static float getFPS ();
 
-	// 获取每帧消费的毫秒数
+	// 获取每帧消费的秒数
 	static float getDeltaTime ();
 };
 

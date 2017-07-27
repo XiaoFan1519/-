@@ -75,8 +75,8 @@ void Circle::SetSize ()
 {
 	//每次缩小的值
 	float m_len = 0;
-	// 每3秒需要减去的值
-	float tmp = len / 180;
+	// 每1秒需要减去的值
+	float tmp = len / 1;
 	// 计算每帧要减去的值
 	m_len = FPSUtil::getDeltaTime () * tmp;
 

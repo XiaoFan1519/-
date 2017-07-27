@@ -21,10 +21,16 @@ void FPSUtil::setStartTime () {
 
 void FPSUtil::setEndTime () {
 	ULONGLONG endTime = GetTickCount64 ();
-	// 暂时不知道如何获取微妙，只能+0.001
-	deltaTime = endTime - startTime + 0.001;
+	float tmp = endTime - startTime + 0.001;
 	// 计算fps
-	fps = 1000 / deltaTime;
+	fps = 1000 / tmp;
+	// 计算每帧消耗的秒数
+	deltaTime = tmp / 1000;
+
+	float sleepTime = 1000 / 60 - tmp;
+	if (sleepTime > 0) {
+		Sleep ((DWORD)sleepTime);
+	}
 }
 
 float FPSUtil::getFPS () {

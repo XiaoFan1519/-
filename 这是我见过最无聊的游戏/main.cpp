@@ -217,8 +217,13 @@ void CreateDeviceResources (HWND hWnd)
 
 	// Create a Direct2D render target.
 	m_pDirect2dFactory->CreateHwndRenderTarget (
-		D2D1::RenderTargetProperties (),
-		D2D1::HwndRenderTargetProperties (hWnd, size),
+		D2D1::RenderTargetProperties (D2D1_RENDER_TARGET_TYPE_HARDWARE,
+			D2D1::PixelFormat (), 
+			0.0,
+			0.0,
+			D2D1_RENDER_TARGET_USAGE_NONE,
+			D2D1_FEATURE_LEVEL_10),
+		D2D1::HwndRenderTargetProperties (hWnd, size, D2D1_PRESENT_OPTIONS_RETAIN_CONTENTS),
 		&m_pRenderTarget
 	);
 }
@@ -261,7 +266,8 @@ void DrawCircle (HWND hWnd)
 		c->IsOk ();
 		c->Paint (m_pRenderTarget);
 	}
-
+	
+	Sleep (10);
 	FPSUtil::setEndTime ();
 
 	fps (m_pRenderTarget, m_pTextFormat);
