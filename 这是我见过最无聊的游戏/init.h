@@ -19,6 +19,7 @@
 #include <vector>
 #include <queue>
 #include <sstream>
+#include <list>
 
 // d2d function
 template<class Interface>
