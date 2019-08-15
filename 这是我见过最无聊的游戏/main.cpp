@@ -19,6 +19,8 @@ queue<int> indexs;
 // 保存鼠标坐标
 POINT cursorPos;
 
+bool curosrChanged = true;
+
 // d2d 需要的变量
 ID2D1Factory* m_pDirect2dFactory;
 ID2D1HwndRenderTarget* m_pRenderTarget;
@@ -169,6 +171,7 @@ LRESULT CALLBACK WndProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	case WM_MOUSEMOVE:
 		cursorPos.x = LOWORD (lParam);
 		cursorPos.y = HIWORD (lParam);
+		curosrChanged = true;
 		return 0;
 	}
 	return DefWindowProc (hwnd, iMsg, wParam, lParam);
@@ -244,22 +247,25 @@ void DrawCircle (HWND hWnd)
 	m_pRenderTarget->SetTransform (D2D1::Matrix3x2F::Identity ());
 	// m_pRenderTarget->Clear (D2D1::ColorF (D2D1::ColorF::Black));
 
-	size_t count = doneList.size (); // 之前为了减少每次执行size浪费的时间，所以在循环前先获取大小
-	for (size_t index = 0; index < count; ++index)
-	{
-		Circle* c = doneList[index];
-		if (nullptr == c)
+	// 当鼠标位置发生变化时, 再去执行
+	if (curosrChanged) {
+		size_t count = doneList.size (); // 之前为了减少每次执行size浪费的时间，所以在循环前先获取大小
+		for (size_t index = 0; index < count; ++index)
 		{
-			continue;
-		}
+			Circle* c = doneList[index];
+			if (nullptr == c)
+			{
+				continue;
+			}
 
-		if (c->InCircle (cursorPos))
-		{
-			AddCircle (c);
-			//别忘了删!!!
-			delete c;
-			doneList[index] = nullptr;
-			indexs.push (index);
+			if (c->InCircle (cursorPos))
+			{
+				AddCircle (c);
+				//别忘了删!!!
+				delete c;
+				doneList[index] = nullptr;
+				indexs.push (index);
+			}
 		}
 	}
 	

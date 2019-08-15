@@ -1,11 +1,8 @@
 #include "FPSUtil.h"
 
-
-
 FPSUtil::FPSUtil ()
 {
 }
-
 
 FPSUtil::~FPSUtil ()
 {
@@ -80,7 +77,7 @@ void fps (ID2D1HwndRenderTarget* m_pRenderTarget, IDWriteTextFormat* m_pTextForm
 		static_cast<FLOAT>(800.f),
 		static_cast<FLOAT>(0.f),
 		static_cast<FLOAT>(960.f),
-		static_cast<FLOAT>(16.f)
+		static_cast<FLOAT>(0.f)
 	);
 	// 用于文字的画刷
 	m_pRenderTarget->CreateSolidColorBrush (
