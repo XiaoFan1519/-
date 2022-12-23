@@ -1,5 +1,6 @@
 #pragma once
 #include "init.h"
+#include <chrono>
 
 class FPSUtil
 {
@@ -8,7 +9,7 @@ private:
 	static float fps;
 	// 每帧消费的秒数
 	static float deltaTime;
-	static ULONGLONG startTime;
+	static std::chrono::steady_clock::time_point startTime;
 public:
 	FPSUtil ();
 	~FPSUtil ();

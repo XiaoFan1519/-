@@ -1,4 +1,8 @@
 #include "FPSUtil.h"
+#include <chrono>
+#include <thread>
+
+using namespace std::chrono_literals;
 
 FPSUtil::FPSUtil ()
 {
@@ -8,28 +12,27 @@ FPSUtil::~FPSUtil ()
 {
 }
 
-ULONGLONG FPSUtil::startTime = GetTickCount64 ();
+std::chrono::steady_clock::time_point FPSUtil::startTime = std::chrono::high_resolution_clock::now();
 float FPSUtil::fps = 0;
 float FPSUtil::deltaTime = 0;
 
 void FPSUtil::setStartTime () {
-	startTime = GetTickCount64 ();
+	startTime = std::chrono::high_resolution_clock::now();
 }
 
 void FPSUtil::setEndTime () {
-	ULONGLONG endTime = GetTickCount64 ();
-	float tmp = endTime - startTime;
-	float sleepTime = 1000 / 60 - tmp;
+	auto endTime = std::chrono::high_resolution_clock::now();
+	std::chrono::duration<double, std::milli> elapsed = endTime - startTime;
+	double sleepTime = 1000 / 60 - elapsed.count();
 	if (sleepTime > 0) {
-		Sleep ((DWORD)sleepTime);
+		std::this_thread::sleep_for(std::chrono::milliseconds((long)sleepTime));
 	}
-
-	endTime = GetTickCount64 ();
-	tmp = endTime - startTime;
+	endTime = std::chrono::high_resolution_clock::now();
+	elapsed = endTime - startTime;
 	// 计算fps
-	fps = 1000 / tmp;
+	fps = 1000 / elapsed.count();
 	// 计算每帧消耗的秒数
-	deltaTime = tmp / 1000;
+	deltaTime = elapsed.count() / 1000;
 }
 
 float FPSUtil::getFPS () {
