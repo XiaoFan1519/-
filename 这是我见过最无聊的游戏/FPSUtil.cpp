@@ -2,8 +2,6 @@
 #include <chrono>
 #include <thread>
 
-using namespace std::chrono_literals;
-
 FPSUtil::FPSUtil ()
 {
 }
@@ -12,27 +10,22 @@ FPSUtil::~FPSUtil ()
 {
 }
 
-std::chrono::steady_clock::time_point FPSUtil::startTime = std::chrono::high_resolution_clock::now();
+ULONGLONG FPSUtil::startTime = GetTickCount64();
 float FPSUtil::fps = 0;
 float FPSUtil::deltaTime = 0;
 
 void FPSUtil::setStartTime () {
-	startTime = std::chrono::high_resolution_clock::now();
+	startTime = GetTickCount64();
 }
 
 void FPSUtil::setEndTime () {
-	auto endTime = std::chrono::high_resolution_clock::now();
-	std::chrono::duration<double, std::milli> elapsed = endTime - startTime;
-	double sleepTime = 1000 / 60 - elapsed.count();
-	if (sleepTime > 0) {
-		std::this_thread::sleep_for(std::chrono::milliseconds((long)sleepTime));
-	}
-	endTime = std::chrono::high_resolution_clock::now();
-	elapsed = endTime - startTime;
+	auto endTime = GetTickCount64();
+	auto cost = endTime - startTime;
 	// 计算fps
-	fps = 1000 / elapsed.count();
+	fps = 1000.0 / cost;
 	// 计算每帧消耗的秒数
-	deltaTime = elapsed.count() / 1000;
+	deltaTime = cost / 1000.0;
+	startTime = endTime;
 }
 
 float FPSUtil::getFPS () {
@@ -45,21 +38,10 @@ float FPSUtil::getDeltaTime () {
 
 void fps (ID2D1HwndRenderTarget* m_pRenderTarget, IDWriteTextFormat* m_pTextFormat)
 {
-	static float count;
-	
-	count += FPSUtil::getDeltaTime ();
-	if (count < 1) {
-		return;
-	}
-	count = 0;
-
 	float fps = FPSUtil::getFPS ();
 
-	std::wstringstream ss;
-	ss << "FPS:";
-	ss << fps;
-	std::wstring costStr;
-	ss >> costStr;
+	std::wstring costStr = L"FPS:";
+	costStr += std::to_wstring(fps);
 
 	D2D1_RECT_F clearRect = D2D1::RectF (
 		static_cast<FLOAT>(800.f),

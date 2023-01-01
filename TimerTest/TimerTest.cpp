@@ -2,23 +2,34 @@
 //
 #include <windows.h>
 #include <iostream>
-#include <threadpoollegacyapiset.h>
+#include <string>
+
+ULONGLONG startTime = GetTickCount64();
 
 int i = 0;
 VOID CALLBACK WaitOrTimerCallback(
-    _In_ PVOID   lpParameter,
-    _In_ BOOLEAN TimerOrWaitFired
+    UINT uTimerID, UINT uMsg, DWORD_PTR dwUser, DWORD_PTR dw1, DWORD_PTR dw2
 ) {
-    std::cout << ++i << std::endl;
+    ULONGLONG endTime = GetTickCount64();
+    std::string str = "ms:";
+    str += std::to_string(endTime - startTime);
+    str += "\r\n";
+    std::cout << str;
+    startTime = endTime;
 }
 
 int main()
 {
-    HANDLE hTimer = NULL;
-    CreateTimerQueueTimer(&hTimer, nullptr, WaitOrTimerCallback, 0, 0, 16, WT_EXECUTEDEFAULT);
+    UINT timerID;
+    MMRESULT result = timeBeginPeriod(16);
+    if (result != TIMERR_NOERROR) {
+        std::cout << result << std::endl;
+        return result;
+    }
+    timerID = timeSetEvent(16, 0, WaitOrTimerCallback, 0, TIME_PERIODIC);
     char ch;
     std::cin >> ch;
-    DeleteTimerQueueTimer(nullptr, &hTimer, nullptr);
+    timeKillEvent(timerID);
 }
 
 // 运行程序: Ctrl + F5 或调试 >“开始执行(不调试)”菜单

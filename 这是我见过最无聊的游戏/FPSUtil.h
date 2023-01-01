@@ -9,7 +9,7 @@ private:
 	static float fps;
 	// 每帧消费的秒数
 	static float deltaTime;
-	static std::chrono::steady_clock::time_point startTime;
+	static ULONGLONG startTime;
 public:
 	FPSUtil ();
 	~FPSUtil ();

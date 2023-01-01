@@ -5,7 +5,7 @@
 using namespace std;
 
 LRESULT CALLBACK WndProc (HWND, UINT, WPARAM, LPARAM);
-void DrawCircle (HWND);
+void DrawCircle ();
 
 // 不需要重绘的圆的集合
 vector<Circle*> doneList;
@@ -49,6 +49,24 @@ void CreateDeviceResources (HWND hWnd)
 		D2D1::HwndRenderTargetProperties (hWnd, size, D2D1_PRESENT_OPTIONS_RETAIN_CONTENTS),
 		&m_pRenderTarget
 	);
+}
+
+VOID CALLBACK GameLoop(
+	UINT uTimerID, UINT uMsg, DWORD_PTR dwUser, DWORD_PTR dw1, DWORD_PTR dw2
+) {
+	FPSUtil::setEndTime();
+	DrawCircle();
+}
+
+MMRESULT CreateGameLoop(TCHAR szAppName[])
+{
+	UINT timerID;
+	MMRESULT result = timeBeginPeriod(16);
+	if (result != TIMERR_NOERROR) {
+		MessageBox(NULL, TEXT("设置定时器分辨率失败!"), szAppName, MB_ICONERROR);
+		return result;
+	}
+	return timeSetEvent(16, 0, GameLoop, 0, TIME_PERIODIC);
 }
 
 int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
@@ -123,20 +141,19 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	UpdateWindow (hwnd);
 
 	CreateDeviceResources (hwnd);
+	UINT TimerID = CreateGameLoop(szAppName);
 	do {
 		//利用空闲时间来画画
-		if (PeekMessage (&msg, NULL, 0, 0, PM_REMOVE))
+		if (GetMessage (&msg, NULL, 0, 0))
 		{
 			TranslateMessage (&msg);
 			DispatchMessage (&msg);
 		}
-		else
-		{
-			DrawCircle (hwnd);
-		}
-
+		// DrawCircle (hwnd);
 	} while (msg.message != WM_QUIT);
+
 	// 释放资源
+	timeKillEvent(TimerID);
 	SafeRelease (&m_pRenderTarget);
 
 	//删除所有的圆的指针
@@ -233,10 +250,8 @@ void AddCircle (Circle* c)
 	paintList.push_front (cTmp);
 }
 
-void DrawCircle (HWND hWnd)
+void DrawCircle ()
 {
-	FPSUtil::setStartTime ();
-
 	if (nullptr == m_pRenderTarget)
 	{
 		return;
@@ -282,7 +297,6 @@ void DrawCircle (HWND hWnd)
 			it++;
 		}
 	}
-	FPSUtil::setEndTime ();
 
 	fps (m_pRenderTarget, m_pTextFormat);
 
